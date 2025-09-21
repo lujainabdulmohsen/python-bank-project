@@ -1,0 +1,15 @@
+# Progress
+
+
+ Sunday :
+
+# Progress - Sunday 21/09/2025
+
+- Created new customers with IDs starting from 10001.  
+- Customers can open checking and/or savings accounts.  
+- Added login and logout with ID and password.  
+- Each customer can only see their own accounts.  
+- Data is saved in `bank.csv`.  
+- Menus added in `main.py` for customers and accounts.  
+- Bank name is choosen **Blue Sky Bank**.  
+
