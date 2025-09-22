@@ -1,9 +1,7 @@
 # Progress
 
 
- Sunday :
-
-# Progress - Sunday 21/09/2025
+ ## Sunday :
 
 - Created new customers with IDs starting from 10001.  
 - Customers can open checking and/or savings accounts.  
@@ -12,4 +10,21 @@
 - Data is saved in `bank.csv`.  
 - Menus added in `main.py` for customers and accounts.  
 - Bank name is choosen **Blue Sky Bank**.  
+
+
+## monday : 
+
+-setup Withdraw feature with all rules:
+ -Max $100 per transaction.
+ -$35 overdraft fee applied automatically.
+ -Account deactivated after more than two overdrafts.
+ - Account reactivated when balance returns to zero or above.
+ - Added account access control:
+ - Customers can only view their own accounts.
+ - Menu now depends only on the current session for all actions.
+ - Updated CLI menu:
+ - Withdraw option now shows a simple choice:
+ - 1 is Checking
+ - 2 is Savings
+
 

@@ -1,15 +1,23 @@
 # python-bank-project
-# Blue Sky Bank 🌌💙
-
-A simple banking system using Python and CSV.
-
-## Features 
-- Add new customers with ID starting from 10001.
-- Customers can open a checking account.
-- Customers can open a savings account.
-- Customers can have both accounts (optional).
-- Login and logout with ID and password.
-- Each customer can only access their own info.
-- Data is saved in `bank.csv` and reloaded automatically.
 
 
+# Blue Sky Bank 
+
+
+
+Blue Sky Bank is a simple command line banking application built with Python.
+It lets customers create accounts, log in, and manage their money through a text-based menu. 
+
+# Technical Requirements
+
+Customers can register as new users and open checking or savings accounts—or both. They log in with an ID and password, and once inside, they can only view their own accounts.
+
+The withdrawal feature is fully implemented. Customers may withdraw money from either account, but never more than $100 in a single transaction. If a withdrawal causes the account to go negative, an overdraft fee of $35 is applied. After repeated overdrafts, the account is deactivated until enough funds are added to bring the balance back above zero.
+
+
+⸻
+
+# Technologies Used
+	•	Python 3
+	•	CSV file storage
+	•	Command Line Interface (CLI) menus
