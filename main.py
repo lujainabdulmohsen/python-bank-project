@@ -11,6 +11,17 @@ def info(msg):
     print(msg)
     pause()
 
+def choose_account():
+    print("\nChoose account:")
+    print("1. Checking")
+    print("2. Savings")
+    ch = input("Enter choice: ").strip()
+    if ch == "1":
+        return "checking"
+    if ch == "2":
+        return "savings"
+    return None
+
 def show_accounts(bs: BankSystem):
     if bs.current is None:
         info("Login first.")
@@ -20,33 +31,47 @@ def show_accounts(bs: BankSystem):
     if u.checking is None and u.savings is None:
         print("No accounts yet.")
     else:
-        chk = u.checking.balance if u.checking else "N/A"
-        sav = u.savings.balance if u.savings else "N/A"
-        print(f"Checking: {chk}")
-        print(f"Savings:  {sav}")
+        if u.checking:
+            line = f"Checking: {u.checking.balance:.2f}"
+            if not u.checking.active or u.checking.overdraft_count > 0:
+                status = "inactive" if not u.checking.active else "active"
+                line += f" | {status}, overdrafts={u.checking.overdraft_count}"
+            print(line)
+        else:
+            print("Checking: N/A")
+        if u.savings:
+            line = f"Savings:  {u.savings.balance:.2f}"
+            if not u.savings.active or u.savings.overdraft_count > 0:
+                status = "inactive" if not u.savings.active else "active"
+                line += f" | {status}, overdrafts={u.savings.overdraft_count}"
+            print(line)
+        else:
+            print("Savings:  N/A")
     pause()
 
 def withdraw_menu(bs: BankSystem):
     if bs.current is None:
         info("Login first.")
         return
-    print("\nChoose account:")
-    print("1. Checking")
-    print("2. Savings")
-    ch = input("Enter choice: ").strip()
-    if ch == "1":
-        acc_type = "checking"
-    elif ch == "2":
-        acc_type = "savings"
-    else:
+    acc_type = choose_account()
+    if not acc_type:
         info("Invalid account choice.")
         return
     amt = prompt_float("Amount: ", 0.0)
-    try:
-        msg = bs.withdraw(acc_type, amt)
-        info(msg)
-    except Exception as e:
-        info(f"Error: {e}")
+    msg = bs.withdraw(acc_type, amt)
+    info(msg)
+
+def deposit_menu(bs: BankSystem):
+    if bs.current is None:
+        info("Login first.")
+        return
+    acc_type = choose_account()
+    if not acc_type:
+        info("Invalid account choice.")
+        return
+    amt = prompt_float("Amount: ", 0.0)
+    msg = bs.deposit(acc_type, amt)
+    info(msg)
 
 def create_missing(bs: BankSystem):
     if bs.current is None:
@@ -64,11 +89,10 @@ def create_missing(bs: BankSystem):
     for acc_type in missing:
         confirm = input(f"Do you want to create {acc_type}? (y/n): ").strip().lower()
         if confirm == "y":
-            amt = prompt_float(f"Initial deposit for {acc_type} (default 0): ", 0.0)
             try:
                 uid, pwd = bs.current.id, bs.current.password
-                bs.create_account(acc_type, amt)
-                print(f"{acc_type} created and saved to CSV.")
+                bs.create_account(acc_type)
+                print(f"{acc_type.capitalize()} account created.")
                 bs.load_from_csv()
                 bs.login(uid, pwd)
             except Exception as e:
@@ -84,29 +108,28 @@ def login_menu(bs: BankSystem):
         bs.logout()
         info("Logged out.")
         return "back"
-
     while True:
         print("\n--- Logged In ---")
         print("1. View my accounts")
         print("2. Withdraw")
-        print("3. Create missing account")
-        print("4. Logout")
-        print("5. Exit")
+        print("3. Deposit")
+        print("4. Create missing account")
+        print("5. Logout")
+        print("6. Exit")
         choice = input("Choose: ").strip()
-
         actions = {
             "1": lambda: show_accounts(bs),
             "2": lambda: withdraw_menu(bs),
-            "3": lambda: create_missing(bs),
-            "4": do_logout,                       
-            "5": lambda: (print("Goodbye!"), exit()),
+            "3": lambda: deposit_menu(bs),
+            "4": lambda: create_missing(bs),
+            "5": do_logout,
+            "6": lambda: (print("Goodbye!"), exit()),
         }
-
         act = actions.get(choice)
         if act:
             res = act()
             if res == "back":
-                return  
+                return
         else:
             info("Invalid option.")
 
@@ -116,7 +139,7 @@ def main():
     while True:
         print("\n--- Blue Sky Bank ---")
         print("1. Login")
-        print("2. Create new customer")
+        print("2. Create account")
         print("3. Exit")
         choice = input("Choose: ").strip()
         if choice == "1":
@@ -135,19 +158,15 @@ def main():
             first = input("First name: ").strip()
             last = input("Last name: ").strip()
             pwd = input("Password: ").strip()
-            open_checking = input("Open checking? (y/n): ").strip().lower() == "y"
-            open_savings  = input("Open savings? (y/n): ").strip().lower() == "y"
-            chk_amt = prompt_float("Initial checking (default 0): ", 0.0) if open_checking else 0.0
-            sav_amt = prompt_float("Initial savings (default 0): ", 0.0) if open_savings else 0.0
+            open_checking = input("Create checking account? (y/n): ").strip().lower() == "y"
+            open_savings  = input("Create savings account?  (y/n): ").strip().lower() == "y"
             try:
                 c = bs.add_customer(
                     first_name=first,
                     last_name=last,
                     password=pwd,
                     open_checking=open_checking,
-                    open_savings=open_savings,
-                    checking_balance=chk_amt,
-                    savings_balance=sav_amt
+                    open_savings=open_savings
                 )
                 info(f"Customer created. Your ID is {c.id}")
             except Exception as e:

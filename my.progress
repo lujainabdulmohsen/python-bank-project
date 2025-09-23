@@ -28,3 +28,15 @@
  - 2 is Savings
 
 
+## Tuesday : 
+
+
+ -Added Deposit feature.
+-Deposit reactivates an inactive account automatically if balance ≥ 0.
+-Overdraft logic fixed to deactivate only after more than two overdrafts.
+-Accounts now save balance, active state, and overdraft count in bank.csv.
+-Menu wording updated: “Create account” instead of “Create new customer.”
+-Removed initial deposit prompt for new accounts (all accounts start at 0).
+
+
+
