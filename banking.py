@@ -1,8 +1,10 @@
 import csv
+import os
+from datetime import datetime
 
 class Customer:
     def __init__(self, id, first_name, last_name, password, checking=None, savings=None):
-        self.id = id
+        self.id = int(id)
         self.first_name = first_name
         self.last_name = last_name
         self.password = password
@@ -15,12 +17,46 @@ class Account:
         self.balance = float(balance)
         self.active = bool(active)
         self.overdraft_count = int(overdraft_count)
+        self.session_overdrafts = 0
+
+class TransactionLog:
+    FIELDS = [
+        "timestamp","customer_id","action","account_type",
+        "amount","fee","prev_balance","new_balance","status","message"
+    ]
+    def __init__(self, csv_path="transactions.csv"):
+        self.csv_path = csv_path
+        self._ensure_header()
+    def _ensure_header(self):
+        need_header = not os.path.exists(self.csv_path) or os.path.getsize(self.csv_path) == 0
+        if need_header:
+            with open(self.csv_path, "w", newline="", encoding="utf-8") as f:
+                writer = csv.DictWriter(f, fieldnames=self.FIELDS)
+                writer.writeheader()
+    def append(self, **kw):
+        row = {k: "" for k in self.FIELDS}
+        row.update(kw)
+        row["timestamp"] = row.get("timestamp") or datetime.now().isoformat(timespec="seconds")
+        with open(self.csv_path, "a", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=self.FIELDS)
+            writer.writerow(row)
+    def list_for(self, customer_id, limit=20):
+        out = []
+        try:
+            with open(self.csv_path, newline="", encoding="utf-8") as f:
+                reader = csv.DictReader(f)
+                rows = [r for r in reader if str(r.get("customer_id")) == str(customer_id)]
+                out = rows[-limit:] if limit else rows
+        except FileNotFoundError:
+            out = []
+        return out
 
 class BankSystem:
-    def __init__(self, csv_path):
+    def __init__(self, csv_path, log_path="transactions.csv"):
         self.csv_path = csv_path
         self.customers = []
         self.current = None
+        self.log = TransactionLog(log_path)
 
     def load_from_csv(self):
         self.customers = []
@@ -75,28 +111,35 @@ class BankSystem:
                 })
 
     def add_customer(self, first_name, last_name, password, open_checking=False, open_savings=False):
-        if self.customers:
-            new_id = max(c.id for c in self.customers) + 1
-        else:
-            new_id = 10001
+        new_id = (max((c.id for c in self.customers), default=10000) + 1)
         checking = Account("checking", 0.0) if open_checking else None
         savings  = Account("savings", 0.0) if open_savings else None
         customer = Customer(new_id, first_name, last_name, password, checking, savings)
         self.customers.append(customer)
         self.save_all_to_csv()
+        self.log.append(customer_id=new_id, action="add_customer", account_type="", amount="", fee="",
+                        prev_balance="", new_balance="", status="ok",
+                        message=f"Customer created (checking={bool(checking)}, savings={bool(savings)})")
         return customer
 
     def login(self, customer_id, password):
         for c in self.customers:
             if c.id == int(customer_id) and c.password == password:
                 self.current = c
+                self.log.append(customer_id=c.id, action="login", account_type="", amount="", fee="",
+                                prev_balance="", new_balance="", status="ok", message="Login success")
                 return c
+        self.log.append(customer_id=customer_id, action="login", account_type="", amount="", fee="",
+                        prev_balance="", new_balance="", status="error", message="Invalid credentials")
         raise PermissionError("invalid credentials")
 
     def logout(self):
+        if self.current:
+            self.log.append(customer_id=self.current.id, action="logout", account_type="",
+                            amount="", fee="", prev_balance="", new_balance="", status="ok", message="Logout")
         self.current = None
 
-    def create_account(self, account_type):
+    def create_account(self, account_type, initial_balance=0.0):
         if self.current is None:
             raise PermissionError("login required")
         if account_type not in ("checking", "savings"):
@@ -107,48 +150,67 @@ class BankSystem:
         if account_type == "checking":
             if c.checking:
                 raise ValueError("Checking account already exists.")
-            c.checking = Account("checking", 0.0)
+            c.checking = Account("checking", float(initial_balance))
             acc = c.checking
         else:
             if c.savings:
                 raise ValueError("Savings account already exists.")
-            c.savings = Account("savings", 0.0)
+            c.savings = Account("savings", float(initial_balance))
             acc = c.savings
         self.save_all_to_csv()
+        self.log.append(customer_id=c.id, action="create_account", account_type=account_type,
+                        amount=f"{float(initial_balance):.2f}", fee="0.00",
+                        prev_balance="0.00", new_balance=f"{acc.balance:.2f}",
+                        status="ok", message="Account created")
         return acc
 
-    def _get_account(self, account_type):
-        if self.current is None:
+    def _get_account(self, account_type, customer=None):
+        customer = customer or self.current
+        if customer is None:
             raise PermissionError("login required")
         if account_type == "checking":
-            if not self.current.checking:
+            if not customer.checking:
                 raise ValueError("No checking account.")
-            return self.current.checking
-        elif account_type == "savings":
-            if not self.current.savings:
+            return customer.checking
+        if account_type == "savings":
+            if not customer.savings:
                 raise ValueError("No savings account.")
-            return self.current.savings
-        else:
-            raise ValueError("invalid account type")
+            return customer.savings
+        raise ValueError("invalid account type")
 
     def deposit(self, account_type, amount):
+        try:
+            amount = float(amount)
+        except (TypeError, ValueError):
+            return "Amount must be a number."
         if amount <= 0:
             return "Amount must be positive."
         try:
             acc = self._get_account(account_type)
         except Exception as e:
             return f"Error: {e}"
+        prev = acc.balance
         was_inactive = not acc.active
         acc.balance += amount
-        if acc.balance >= 0 and was_inactive:
+        msg = "Deposit successful."
+        crossed_to_solvent = (prev < 0 <= acc.balance)
+        if crossed_to_solvent or (was_inactive and acc.balance >= 0):
             acc.active = True
-            msg = f"Account reactivated. Deposit successful. New balance: {acc.balance:.2f}"
-        else:
-            msg = f"Deposit successful. New balance: {acc.balance:.2f}"
+            acc.session_overdrafts = 0
+            acc.overdraft_count = 0
+            msg = "Account reactivated. Deposit successful."
         self.save_all_to_csv()
-        return msg
+        self.log.append(customer_id=self.current.id, action="deposit", account_type=account_type,
+                        amount=f"{amount:.2f}", fee="0.00",
+                        prev_balance=f"{prev:.2f}", new_balance=f"{acc.balance:.2f}",
+                        status="ok", message=msg)
+        return f"{msg} New balance: {acc.balance:.2f}"
 
     def withdraw(self, account_type, amount):
+        try:
+            amount = float(amount)
+        except (TypeError, ValueError):
+            return "Amount must be a number."
         if amount <= 0:
             return "Amount must be positive."
         try:
@@ -156,14 +218,49 @@ class BankSystem:
         except Exception as e:
             return f"Error: {e}"
         if not acc.active:
-            return "Account is deactivated. Current balance: {:.2f}".format(acc.balance)
+            msg = f"Account is deactivated. Current balance: {acc.balance:.2f}"
+            self.log.append(customer_id=self.current.id, action="withdraw", account_type=account_type,
+                            amount=f"{amount:.2f}", fee="0.00",
+                            prev_balance=f"{acc.balance:.2f}", new_balance=f"{acc.balance:.2f}",
+                            status="error", message="deactivated")
+            return msg
         if amount > 100:
-            return "Cannot withdraw more than $100 in one transaction. Current balance: {:.2f}".format(acc.balance)
+            msg = f"Cannot withdraw more than $100 in one transaction. Current balance: {acc.balance:.2f}"
+            self.log.append(customer_id=self.current.id, action="withdraw", account_type=account_type,
+                            amount=f"{amount:.2f}", fee="0.00",
+                            prev_balance=f"{acc.balance:.2f}", new_balance=f"{acc.balance:.2f}",
+                            status="error", message="over limit")
+            return msg
+        b = acc.balance
+        if b < 0:
+            max_allowed = max(0.0, min(100.0, b + 65.0))
+            if amount > max_allowed:
+                msg = f"Overdraft limit reached. Max you can withdraw is ${max_allowed:.2f}. Current balance: {b:.2f}"
+                self.log.append(customer_id=self.current.id, action="withdraw", account_type=account_type,
+                                amount=f"{amount:.2f}", fee="0.00",
+                                prev_balance=f"{b:.2f}", new_balance=f"{b:.2f}",
+                                status="error", message="overdraft cap")
+                return msg
+        else:
+            if amount > b:
+                max_allowed = max(0.0, min(100.0, b + 65.0))
+                if amount > max_allowed:
+                    msg = f"Overdraft limit reached. Max you can withdraw is ${max_allowed:.2f}. Current balance: {b:.2f}"
+                    self.log.append(customer_id=self.current.id, action="withdraw", account_type=account_type,
+                                    amount=f"{amount:.2f}", fee="0.00",
+                                    prev_balance=f"{b:.2f}", new_balance=f"{b:.2f}",
+                                    status="error", message="overdraft cap")
+                    return msg
+        prev = acc.balance
         acc.balance -= amount
-        if acc.balance < 0:
-            acc.balance -= 35
+        fee = 0.0
+        overdrafted_now = prev < 0 or acc.balance < 0
+        if overdrafted_now:
+            fee = 35.0
+            acc.balance -= fee
             acc.overdraft_count += 1
-            if acc.overdraft_count > 2:
+            acc.session_overdrafts += 1
+            if acc.overdraft_count >= 2:
                 acc.active = False
                 msg = "Overdraft fee $35.00 applied. Account deactivated."
             else:
@@ -173,7 +270,69 @@ class BankSystem:
                 acc.active = True
             msg = "Withdraw successful."
         self.save_all_to_csv()
-        return "{} Current balance: {:.2f}".format(msg, acc.balance)
+        self.log.append(customer_id=self.current.id, action="withdraw", account_type=account_type,
+                        amount=f"{amount:.2f}", fee=f"{fee:.2f}",
+                        prev_balance=f"{prev:.2f}", new_balance=f"{acc.balance:.2f}",
+                        status="ok", message=msg)
+        return f"{msg} Current balance: {acc.balance:.2f}"
 
-class TransactionLog:
-    pass
+    def transfer(self, from_type, to_type, amount, target_customer_id=None, target_account_type=None):
+        try:
+            amount = float(amount)
+        except (TypeError, ValueError):
+            return "Amount must be a number."
+        if amount <= 0:
+            return "Amount must be positive."
+        try:
+            src = self._get_account(from_type)
+        except Exception as e:
+            return f"Error: {e}"
+        if not src.active:
+            return f"Source account is deactivated. Current balance: {src.balance:.2f}"
+        if amount > 100:
+            return f"Cannot transfer more than $100 in one transaction. Current balance: {src.balance:.2f}"
+        if src.balance - amount < 0:
+            return f"Insufficient funds. Current balance: {src.balance:.2f}"
+        prev_src = src.balance
+        if target_customer_id is None:
+            if from_type == to_type:
+                return "Cannot transfer to the same account."
+            try:
+                dst = self._get_account(to_type)
+            except Exception as e:
+                return f"Error: {e}"
+            src.balance -= amount
+            dst.balance += amount
+            self.save_all_to_csv()
+            self.log.append(customer_id=self.current.id, action="transfer",
+                            account_type=f"{from_type}->{to_type}", amount=f"{amount:.2f}", fee="0.00",
+                            prev_balance=f"{prev_src:.2f}", new_balance=f"{src.balance:.2f}",
+                            status="ok", message="Internal transfer")
+            chk_bal = f"{self.current.checking.balance:.2f}" if self.current.checking else "N/A"
+            sav_bal = f"{self.current.savings.balance:.2f}" if self.current.savings else "N/A"
+            return f"Transfer successful. checking={chk_bal}, savings={sav_bal}"
+        if int(target_customer_id) == self.current.id:
+            return "Cannot transfer to your own accounts here. Use internal transfer."
+        target = next((c for c in self.customers if c.id == int(target_customer_id)), None)
+        if target is None:
+            return "Target customer not found."
+        if target_account_type not in ("checking", "savings"):
+            return "Invalid target account type."
+        try:
+            dst = self._get_account(target_account_type, customer=target)
+        except Exception as e:
+            return f"Error: {e}"
+        src.balance -= amount
+        dst.balance += amount
+        self.save_all_to_csv()
+        self.log.append(customer_id=self.current.id, action="transfer",
+                        account_type=f"{from_type}->{target.id}:{target_account_type}",
+                        amount=f"{amount:.2f}", fee="0.00",
+                        prev_balance=f"{prev_src:.2f}", new_balance=f"{src.balance:.2f}",
+                        status="ok", message=f"External transfer to {target.id}")
+        return f"Transfer successful. {from_type}={src.balance:.2f}"
+
+    def recent_transactions(self, limit=20):
+        if self.current is None:
+            raise PermissionError("login required")
+        return self.log.list_for(self.current.id, limit=limit)
