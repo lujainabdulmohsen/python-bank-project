@@ -3,13 +3,13 @@ from banking import BankSystem
 def pause():
     input("Press Enter to continue...")
 
-def prompt_float(msg, default=0.0):
-    s = input(msg).strip()
-    try:
-        return float(s) if s else float(default)
-    except ValueError:
-        print("Invalid amount. Using default:", default)
-        return float(default)
+def prompt_amount(msg):
+    while True:
+        s = input(msg).strip()
+        try:
+            return float(s)
+        except ValueError:
+            print("Invalid amount. Please enter a number.")
 
 def info(msg):
     print(msg)
@@ -27,12 +27,8 @@ def choose_account():
             return "savings"
         print("Invalid choice. Please choose 1 or 2.")
 
-def has_account(user, acc_type):
-    if acc_type == "checking":
-        return user.checking is not None
-    if acc_type == "savings":
-        return user.savings is not None
-    return False
+def has_account(user, t):
+    return getattr(user, t) is not None
 
 def show_accounts(bs):
     if bs.current is None:
@@ -69,7 +65,7 @@ def withdraw_menu(bs):
     if not has_account(bs.current, acc_type):
         info(f"You don't have a {acc_type} account.")
         return
-    amt = prompt_float("Amount: ", 0.0)
+    amt = prompt_amount("Amount: ")
     msg = bs.withdraw(acc_type, amt)
     info(msg)
 
@@ -81,7 +77,7 @@ def deposit_menu(bs):
     if not has_account(bs.current, acc_type):
         info(f"You don't have a {acc_type} account.")
         return
-    amt = prompt_float("Amount: ", 0.0)
+    amt = prompt_amount("Amount: ")
     msg = bs.deposit(acc_type, amt)
     info(msg)
 
@@ -102,7 +98,7 @@ def transfer_menu(bs):
         if not has_account(bs.current, to_type):
             info("You don't have a savings account.")
             return
-        amt = prompt_float("Amount: ", 0.0)
+        amt = prompt_amount("Amount: ")
         msg = bs.transfer(from_type, to_type, amt)
         info(msg)
     elif ch == "2":
@@ -113,7 +109,7 @@ def transfer_menu(bs):
         if not has_account(bs.current, to_type):
             info("You don't have a checking account.")
             return
-        amt = prompt_float("Amount: ", 0.0)
+        amt = prompt_amount("Amount: ")
         msg = bs.transfer(from_type, to_type, amt)
         info(msg)
     elif ch == "3":
@@ -139,7 +135,7 @@ def transfer_menu(bs):
         if not has_account(target, target_acc):
             info(f"Target does not have a {target_acc} account.")
             return
-        amt = prompt_float("Amount: ", 0.0)
+        amt = prompt_amount("Amount: ")
         msg = bs.transfer(from_type, None, amt, target_customer_id=int(target_id), target_account_type=target_acc)
         info(msg)
     else:

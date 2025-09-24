@@ -57,3 +57,4 @@ id,first_name,last_name,password,checking_balance,checking_active,checking_overd
 100051,q,q,111,119.00,True,0,75.00,True,0
 100052,qq,qq,123,-36.00,True,1,0.00,True,0
 100053,111,111,111,89.00,True,0,100.00,True,0
+100054,lujain,alsultan,1234,22.00,True,0,28.00,True,0

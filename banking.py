@@ -16,7 +16,6 @@ class Account:
         self.balance = float(balance)
         self.active = bool(active)
         self.overdraft_count = int(overdraft_count)
-        self.session_overdrafts = 0
 
 class TransactionLog:
     FIELDS = [
@@ -109,26 +108,16 @@ class BankSystem:
         customer = Customer(new_id, first_name, last_name, password, checking, savings)
         self.customers.append(customer)
         self.save_all_to_csv()
-        self.log.append(customer_id=new_id, action="add_customer", account_type="", amount="", fee="",
-                        prev_balance="", new_balance="", status="ok",
-                        message=f"Customer created (checking={bool(checking)}, savings={bool(savings)})")
         return customer
 
     def login(self, customer_id, password):
         for c in self.customers:
             if c.id == int(customer_id) and c.password == password:
                 self.current = c
-                self.log.append(customer_id=c.id, action="login", account_type="", amount="", fee="",
-                                prev_balance="", new_balance="", status="ok", message="Login success")
                 return c
-        self.log.append(customer_id=customer_id, action="login", account_type="", amount="", fee="",
-                        prev_balance="", new_balance="", status="error", message="Invalid credentials")
         raise PermissionError("invalid credentials")
 
     def logout(self):
-        if self.current:
-            self.log.append(customer_id=self.current.id, action="logout", account_type="",
-                            amount="", fee="", prev_balance="", new_balance="", status="ok", message="Logout")
         self.current = None
 
     def create_account(self, account_type, initial_balance=0.0):
@@ -150,10 +139,6 @@ class BankSystem:
             c.savings = Account("savings", float(initial_balance))
             acc = c.savings
         self.save_all_to_csv()
-        self.log.append(customer_id=c.id, action="create_account", account_type=account_type,
-                        amount=f"{float(initial_balance):.2f}", fee="0.00",
-                        prev_balance="0.00", new_balance=f"{acc.balance:.2f}",
-                        status="ok", message="Account created")
         return acc
 
     def _get_account(self, account_type, customer=None):
@@ -211,11 +196,9 @@ class BankSystem:
                 if self.current.checking:
                     self.current.checking.active = True
                     self.current.checking.overdraft_count = 0
-                    self.current.checking.session_overdrafts = 0
                 if self.current.savings:
                     self.current.savings.active = True
                     self.current.savings.overdraft_count = 0
-                    self.current.savings.session_overdrafts = 0
                 msg = "All accounts reactivated. Deposit successful."
             else:
                 msg = "Deposit successful."
@@ -281,9 +264,8 @@ class BankSystem:
             fee = 35.0
             acc.balance -= fee
             acc.overdraft_count += 1
-            acc.session_overdrafts += 1
             total = self._customer_overdraft_total(self.current)
-            if total > 2:
+            if total >= 3:
                 self._deactivate_customer_accounts(self.current)
                 msg = "Overdraft fee $35.00 applied. Account deactivated."
             else:

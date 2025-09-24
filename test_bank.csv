@@ -1,0 +1,2 @@
+id,first_name,last_name,password,checking_balance,checking_active,checking_overdrafts,savings_balance,savings_active,savings_overdrafts
+10001,Ali,User,2222,50.00,True,0,50.00,True,0

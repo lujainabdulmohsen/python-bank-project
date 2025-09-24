@@ -14,7 +14,7 @@
 
 ## monday : 
 
--setup Withdraw feature with all rules:
+ -setup Withdraw feature with all rules:
  -Max $100 per transaction.
  -$35 overdraft fee applied automatically.
  -Account deactivated after more than two overdrafts.
@@ -31,12 +31,22 @@
 ## Tuesday : 
 
 
- -Added Deposit feature.
+-Added Deposit feature.
 -Deposit reactivates an inactive account automatically if balance ≥ 0.
 -Overdraft logic fixed to deactivate only after more than two overdrafts.
 -Accounts now save balance, active state, and overdraft count in bank.csv.
 -Menu wording updated: “Create account” instead of “Create new customer.”
 -Removed initial deposit prompt for new accounts (all accounts start at 0).
+
+
+## wednesday : 
+
+
+-Added complet user deactivation after 3 overdrafts (all accounts freeze until balances ≥ 0).
+-added Transaction Log in transactions.csv.
+-Updated Main Menu to show account balances and statuses (Active/Inactive).
+-Added Transaction Filters: view all, checking only, savings only, or external transfers.
+-Created basic tests (test_banking.py) for add customer, deposit/withdraw, and internal transfer.
 
 
 

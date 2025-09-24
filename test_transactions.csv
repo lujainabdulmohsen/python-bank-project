@@ -1,0 +1,17 @@
+customer_id,action,account_type,amount,fee,prev_balance,new_balance,status,message
+10001,deposit,checking,200.00,0.00,0.00,200.00,ok,Deposit successful.
+10001,withdraw,checking,50.00,0.00,200.00,150.00,ok,Withdraw successful.
+10001,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+10001,transfer,checking->savings,50.00,0.00,100.00,50.00,ok,Internal transfer
+10001,deposit,checking,200.00,0.00,0.00,200.00,ok,Deposit successful.
+10001,withdraw,checking,50.00,0.00,200.00,150.00,ok,Withdraw successful.
+10001,deposit,checking,50.00,0.00,0.00,50.00,ok,Deposit successful.
+10001,withdraw,checking,80.00,35.00,50.00,-65.00,ok,Overdraft fee $35.00 applied.
+10001,withdraw,checking,80.00,0.00,-65.00,-65.00,error,overdraft cap
+10001,withdraw,checking,80.00,0.00,-65.00,-65.00,error,overdraft cap
+10001,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+10001,transfer,checking->savings,50.00,0.00,100.00,50.00,ok,Internal transfer
+10001,deposit,checking,200.00,0.00,0.00,200.00,ok,Deposit successful.
+10001,withdraw,checking,50.00,0.00,200.00,150.00,ok,Withdraw successful.
+10001,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+10001,transfer,checking->savings,50.00,0.00,100.00,50.00,ok,Internal transfer
