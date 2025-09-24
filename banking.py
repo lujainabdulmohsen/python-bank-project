@@ -1,6 +1,5 @@
 import csv
 import os
-from datetime import datetime
 
 class Customer:
     def __init__(self, id, first_name, last_name, password, checking=None, savings=None):
@@ -21,35 +20,28 @@ class Account:
 
 class TransactionLog:
     FIELDS = [
-        "timestamp","customer_id","action","account_type",
+        "customer_id","action","account_type",
         "amount","fee","prev_balance","new_balance","status","message"
     ]
     def __init__(self, csv_path="transactions.csv"):
         self.csv_path = csv_path
-        self._ensure_header()
-    def _ensure_header(self):
         need_header = not os.path.exists(self.csv_path) or os.path.getsize(self.csv_path) == 0
         if need_header:
             with open(self.csv_path, "w", newline="", encoding="utf-8") as f:
-                writer = csv.DictWriter(f, fieldnames=self.FIELDS)
-                writer.writeheader()
+                csv.DictWriter(f, fieldnames=self.FIELDS).writeheader()
     def append(self, **kw):
         row = {k: "" for k in self.FIELDS}
         row.update(kw)
-        row["timestamp"] = row.get("timestamp") or datetime.now().isoformat(timespec="seconds")
         with open(self.csv_path, "a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=self.FIELDS)
-            writer.writerow(row)
+            csv.DictWriter(f, fieldnames=self.FIELDS).writerow(row)
     def list_for(self, customer_id, limit=20):
-        out = []
         try:
             with open(self.csv_path, newline="", encoding="utf-8") as f:
                 reader = csv.DictReader(f)
                 rows = [r for r in reader if str(r.get("customer_id")) == str(customer_id)]
-                out = rows[-limit:] if limit else rows
+                return rows[-limit:] if limit else rows
         except FileNotFoundError:
-            out = []
-        return out
+            return []
 
 class BankSystem:
     def __init__(self, csv_path, log_path="transactions.csv"):
@@ -178,6 +170,20 @@ class BankSystem:
             return customer.savings
         raise ValueError("invalid account type")
 
+    def _customer_overdraft_total(self, customer):
+        total = 0
+        if customer.checking:
+            total += customer.checking.overdraft_count
+        if customer.savings:
+            total += customer.savings.overdraft_count
+        return total
+
+    def _deactivate_customer_accounts(self, customer):
+        if customer.checking:
+            customer.checking.active = False
+        if customer.savings:
+            customer.savings.active = False
+
     def deposit(self, account_type, amount):
         try:
             amount = float(amount)
@@ -189,16 +195,32 @@ class BankSystem:
             acc = self._get_account(account_type)
         except Exception as e:
             return f"Error: {e}"
+        was_user_deactivated = (
+            (self.current.checking and not self.current.checking.active) or
+            (self.current.savings and not self.current.savings.active)
+        )
         prev = acc.balance
-        was_inactive = not acc.active
         acc.balance += amount
-        msg = "Deposit successful."
-        crossed_to_solvent = (prev < 0 <= acc.balance)
-        if crossed_to_solvent or (was_inactive and acc.balance >= 0):
-            acc.active = True
-            acc.session_overdrafts = 0
-            acc.overdraft_count = 0
-            msg = "Account reactivated. Deposit successful."
+        if was_user_deactivated:
+            all_solvent = True
+            if self.current.checking and self.current.checking.balance < 0:
+                all_solvent = False
+            if self.current.savings and self.current.savings.balance < 0:
+                all_solvent = False
+            if all_solvent:
+                if self.current.checking:
+                    self.current.checking.active = True
+                    self.current.checking.overdraft_count = 0
+                    self.current.checking.session_overdrafts = 0
+                if self.current.savings:
+                    self.current.savings.active = True
+                    self.current.savings.overdraft_count = 0
+                    self.current.savings.session_overdrafts = 0
+                msg = "All accounts reactivated. Deposit successful."
+            else:
+                msg = "Deposit successful."
+        else:
+            msg = "Deposit successful."
         self.save_all_to_csv()
         self.log.append(customer_id=self.current.id, action="deposit", account_type=account_type,
                         amount=f"{amount:.2f}", fee="0.00",
@@ -260,8 +282,9 @@ class BankSystem:
             acc.balance -= fee
             acc.overdraft_count += 1
             acc.session_overdrafts += 1
-            if acc.overdraft_count >= 2:
-                acc.active = False
+            total = self._customer_overdraft_total(self.current)
+            if total > 2:
+                self._deactivate_customer_accounts(self.current)
                 msg = "Overdraft fee $35.00 applied. Account deactivated."
             else:
                 msg = "Overdraft fee $35.00 applied."

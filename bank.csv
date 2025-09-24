@@ -48,4 +48,12 @@ id,first_name,last_name,password,checking_balance,checking_active,checking_overd
 100042,q,q,123,300.00,True,0,,,
 100043,q,q,123,100.00,True,0,100.00,True,0
 100044,qq,qq,123,28.00,True,0,100.00,True,0
-100045,q,q,111,0.00,True,0,,,
+100045,q,q,111,11.00,True,0,,,
+100046,1,1,111,10.00,True,0,0.00,True,0
+100047,qq,qq,111,-37.00,False,1,-46.00,False,1
+100048,q,q,111,123.00,True,0,39.00,True,0
+100049,q,qq,123,500.00,False,0,-72.00,False,2
+100050,,,,,,,,,
+100051,q,q,111,119.00,True,0,75.00,True,0
+100052,qq,qq,123,-36.00,True,1,0.00,True,0
+100053,111,111,111,89.00,True,0,100.00,True,0

@@ -1,4 +1,4 @@
-timestamp,customer_id,action,account_type,amount,fee,prev_balance,new_balance,status,message
+customer_id,action,account_type,amount,fee,prev_balance,new_balance,status,message
 2025-09-24T09:18:07,100031,add_customer,,,,,,ok,"Customer created (checking=True, savings=False)"
 2025-09-24T09:18:16,100031,login,,,,,,ok,Login success
 2025-09-24T09:18:35,100031,deposit,checking,300.00,0.00,0.00,300.00,ok,Deposit successful.
@@ -113,3 +113,85 @@ timestamp,customer_id,action,account_type,amount,fee,prev_balance,new_balance,st
 2025-09-24T12:57:34,100044,deposit,checking,100.00,0.00,-72.00,28.00,ok,Account reactivated. Deposit successful.
 2025-09-24T13:06:26,100045,add_customer,,,,,,ok,"Customer created (checking=True, savings=False)"
 2025-09-24T13:06:34,100045,login,,,,,,ok,Login success
+2025-09-24T14:19:28,100046,add_customer,,,,,,ok,"Customer created (checking=True, savings=False)"
+2025-09-24T14:19:39,100046,login,,,,,,ok,Login success
+2025-09-24T14:19:51,100046,create_account,savings,0.00,0.00,0.00,0.00,ok,Account created
+2025-09-24T14:19:51,100046,login,,,,,,ok,Login success
+2025-09-24T14:20:11,100046,deposit,checking,10.00,0.00,0.00,10.00,ok,All accounts reactivated. Deposit successful.
+2025-09-24T14:35:09,100047,add_customer,,,,,,ok,"Customer created (checking=True, savings=True)"
+2025-09-24T14:35:31,100047,login,,,,,,ok,Login success
+2025-09-24T14:35:37,100047,logout,,,,,,ok,Logout
+2025-09-24T14:35:51,100047,login,,,,,,error,Invalid credentials
+2025-09-24T14:36:06,100047,login,,,,,,error,Invalid credentials
+2025-09-24T14:36:19,100047,login,,,,,,ok,Login success
+2025-09-24T14:36:39,100047,withdraw,checking,1.00,35.00,0.00,-36.00,ok,Overdraft fee $35.00 applied.
+2025-09-24T14:36:48,100047,withdraw,checking,1.00,35.00,-36.00,-72.00,ok,Overdraft fee $35.00 applied. Account deactivated.
+2025-09-24T14:36:57,100047,withdraw,savings,1.00,0.00,0.00,0.00,error,deactivated
+2025-09-24T14:37:19,100047,deposit,checking,100.00,0.00,-72.00,28.00,ok,All accounts reactivated. Deposit successful.
+2025-09-24T14:37:31,100047,withdraw,savings,11.00,35.00,0.00,-46.00,ok,Overdraft fee $35.00 applied.
+2025-09-24T14:37:57,100047,withdraw,checking,30.00,35.00,28.00,-37.00,ok,Overdraft fee $35.00 applied. Account deactivated.
+100048,add_customer,,,,,,ok,"Customer created (checking=True, savings=False)"
+100048,login,,,,,,ok,Login success
+100048,create_account,savings,0.00,0.00,0.00,0.00,ok,Account created
+100048,login,,,,,,ok,Login success
+100048,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+100048,deposit,savings,1.00,0.00,0.00,1.00,ok,Deposit successful.
+100048,withdraw,savings,2.00,35.00,1.00,-36.00,ok,Overdraft fee $35.00 applied.
+100048,withdraw,savings,1.00,35.00,-36.00,-72.00,ok,Overdraft fee $35.00 applied.
+100048,withdraw,checking,100.00,0.00,100.00,0.00,ok,Withdraw successful.
+100048,withdraw,savings,1.00,0.00,-72.00,-72.00,error,overdraft cap
+100048,withdraw,checking,20.00,35.00,0.00,-55.00,ok,Overdraft fee $35.00 applied. Account deactivated.
+100048,withdraw,checking,1.00,0.00,-55.00,-55.00,error,deactivated
+100048,withdraw,savings,1.00,0.00,-72.00,-72.00,error,deactivated
+100048,deposit,checking,200.00,0.00,-55.00,145.00,ok,Deposit successful.
+100048,withdraw,savings,1.00,0.00,-72.00,-72.00,error,deactivated
+100048,withdraw,checking,1.00,0.00,145.00,145.00,error,deactivated
+100048,deposit,savings,100.00,0.00,-72.00,28.00,ok,All accounts reactivated. Deposit successful.
+100048,transfer,checking->savings,11.00,0.00,145.00,134.00,ok,Internal transfer
+100048,transfer,checking->100045:checking,11.00,0.00,134.00,123.00,ok,External transfer to 100045
+100049,add_customer,,,,,,ok,"Customer created (checking=True, savings=False)"
+100049,login,,,,,,ok,Login success
+100049,deposit,checking,300.00,0.00,0.00,300.00,ok,Deposit successful.
+100049,deposit,checking,300.00,0.00,300.00,600.00,ok,Deposit successful.
+100049,create_account,savings,0.00,0.00,0.00,0.00,ok,Account created
+100049,login,,,,,,ok,Login success
+100049,deposit,savings,300.00,0.00,0.00,300.00,ok,Deposit successful.
+100049,withdraw,checking,101.00,0.00,600.00,600.00,error,over limit
+100049,withdraw,checking,100.00,0.00,600.00,500.00,ok,Withdraw successful.
+100049,withdraw,savings,100.00,0.00,300.00,200.00,ok,Withdraw successful.
+100049,withdraw,savings,100.00,0.00,200.00,100.00,ok,Withdraw successful.
+100049,withdraw,savings,200.00,0.00,100.00,100.00,error,over limit
+100049,withdraw,savings,100.00,0.00,100.00,0.00,ok,Withdraw successful.
+100049,withdraw,savings,1.00,35.00,0.00,-36.00,ok,Overdraft fee $35.00 applied.
+100049,withdraw,savings,1.00,35.00,-36.00,-72.00,ok,Overdraft fee $35.00 applied. Account deactivated.
+100049,withdraw,checking,100.00,0.00,500.00,500.00,error,deactivated
+100050,add_customer,,,,,,ok,"Customer created (checking=False, savings=False)"
+11,login,,,,,,error,Invalid credentials
+100051,add_customer,,,,,,ok,"Customer created (checking=True, savings=False)"
+100051,login,,,,,,ok,Login success
+100051,create_account,savings,0.00,0.00,0.00,0.00,ok,Account created
+100051,login,,,,,,ok,Login success
+100051,withdraw,checking,1.00,35.00,0.00,-36.00,ok,Overdraft fee $35.00 applied.
+100051,withdraw,checking,1.00,35.00,-36.00,-72.00,ok,Overdraft fee $35.00 applied.
+100051,withdraw,checking,1.00,0.00,-72.00,-72.00,error,overdraft cap
+100051,withdraw,checking,1.00,0.00,-72.00,-72.00,error,overdraft cap
+100051,withdraw,savings,1.00,35.00,0.00,-36.00,ok,Overdraft fee $35.00 applied. Account deactivated.
+100051,deposit,checking,200.00,0.00,-72.00,128.00,ok,Deposit successful.
+100051,withdraw,checking,1.00,0.00,128.00,128.00,error,deactivated
+100051,deposit,savings,1.00,0.00,-36.00,-35.00,ok,Deposit successful.
+100051,deposit,checking,1.00,0.00,128.00,129.00,ok,Deposit successful.
+100051,deposit,savings,100.00,0.00,-35.00,65.00,ok,All accounts reactivated. Deposit successful.
+100051,transfer,checking->savings,10.00,0.00,129.00,119.00,ok,Internal transfer
+100051,logout,,,,,,ok,Logout
+100052,add_customer,,,,,,ok,"Customer created (checking=True, savings=True)"
+100052,login,,,,,,ok,Login success
+100052,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+100052,withdraw,checking,100.00,0.00,100.00,0.00,ok,Withdraw successful.
+100052,withdraw,checking,1.00,35.00,0.00,-36.00,ok,Overdraft fee $35.00 applied.
+100053,add_customer,,,,,,ok,"Customer created (checking=True, savings=False)"
+100053,login,,,,,,ok,Login success
+100053,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+100053,withdraw,checking,11.00,0.00,100.00,89.00,ok,Withdraw successful.
+100053,create_account,savings,0.00,0.00,0.00,0.00,ok,Account created
+100053,login,,,,,,ok,Login success
+100053,deposit,savings,100.00,0.00,0.00,100.00,ok,Deposit successful.

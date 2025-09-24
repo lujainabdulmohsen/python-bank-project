@@ -150,12 +150,13 @@ def fetch_all_user_tx(bs):
 
 def print_tx_rows(rows):
     for r in rows:
-        print((
-            f"[{r['timestamp']}] {r['action'].upper()} {r['account_type'] or '-'} "
-            f"amt={r['amount'] or '0.00'} fee={r['fee'] or '0.00'} "
-            f"{r['prev_balance'] or '-'} -> {r['new_balance'] or '-'} "
-            f"status={r['status']} msg={r['message']}"
-        ))
+        if r["action"] in ("add_customer", "login", "logout", "create_account"):
+            continue
+        act = r["action"].upper()
+        acc = r["account_type"] or "-"
+        amt = r["amount"] or "0.00"
+        newb = r["new_balance"] or "-"
+        print(f"{act:<8} {acc:<14} {amt:>8} -> {newb}")
 
 def show_transactions_all(bs):
     if bs.current is None:
