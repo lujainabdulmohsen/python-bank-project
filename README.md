@@ -32,9 +32,10 @@ With this app, you can create accounts, manage your balance, transfer funds, and
 ## 💡 Challenges & Key Takeaways
 
 - Learned how to store and read data using CSV files.  
-- Practiced object-oriented programming and built a clean class-based structure.  
-- Implemented overdraft rules with fees, limits, and automatic account deactivation/reactivation.  
+- Practiced object-oriented programming and built a clean class-based structure.    
 - Built an interactive CLI that simulates real banking operations.
+- Improved my understanding of handling edge cases such as overdraft limits and account reactivation conditions.
+- Learned how to structure a larger Python project into multiple classes and files.
 
 ---
 
