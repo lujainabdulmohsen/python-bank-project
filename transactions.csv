@@ -230,3 +230,4 @@ customer_id,action,account_type,amount,fee,prev_balance,new_balance,status,messa
 100054,deposit,checking,100.00,0.00,-78.00,22.00,ok,Deposit successful.
 100054,withdraw,checking,1.00,0.00,22.00,22.00,error,deactivated
 100054,deposit,savings,100.00,0.00,-72.00,28.00,ok,All accounts reactivated. Deposit successful.
+100055,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
