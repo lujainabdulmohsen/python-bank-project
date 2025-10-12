@@ -231,3 +231,19 @@ customer_id,action,account_type,amount,fee,prev_balance,new_balance,status,messa
 100054,withdraw,checking,1.00,0.00,22.00,22.00,error,deactivated
 100054,deposit,savings,100.00,0.00,-72.00,28.00,ok,All accounts reactivated. Deposit successful.
 100055,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+100057,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+100057,withdraw,checking,100.00,0.00,100.00,0.00,ok,Withdraw successful.
+100057,withdraw,checking,1.00,35.00,0.00,-36.00,ok,Overdraft fee $35.00 applied.
+100057,deposit,checking,40.00,0.00,-36.00,4.00,ok,Deposit successful.
+100057,withdraw,checking,10.00,35.00,4.00,-41.00,ok,Overdraft fee $35.00 applied.
+100057,withdraw,checking,1.00,35.00,-41.00,-77.00,ok,Overdraft fee $35.00 applied. Account deactivated.
+100057,deposit,savings,200.00,0.00,0.00,200.00,ok,Deposit successful.
+100057,withdraw,savings,1.00,0.00,200.00,200.00,error,deactivated
+100057,withdraw,checking,300.00,0.00,-77.00,-77.00,error,deactivated
+100057,deposit,checking,300.00,0.00,-77.00,223.00,ok,All accounts reactivated. Deposit successful.
+100057,withdraw,savings,1.00,0.00,200.00,199.00,ok,Withdraw successful.
+100057,withdraw,checking,101.00,0.00,223.00,223.00,error,over limit
+100058,deposit,checking,100.00,0.00,0.00,100.00,ok,Deposit successful.
+100058,deposit,savings,1000.00,0.00,0.00,1000.00,ok,Deposit successful.
+100058,transfer,checking->savings,50.00,0.00,100.00,50.00,ok,Internal transfer
+100058,transfer,savings->checking,100.00,0.00,1050.00,950.00,ok,Internal transfer

@@ -60,3 +60,6 @@ id,first_name,last_name,password,checking_balance,checking_active,checking_overd
 100054,lujain,alsultan,1234,22.00,True,0,28.00,True,0
 100055,lujain,alsultan,1234,100.00,True,0,0.00,True,0
 100056,lll,lll,1234,0.00,True,0,,,
+100057,lujain,alsultan,1234,223.00,True,0,199.00,True,0
+100058,qqq,qq,1234,150.00,True,0,950.00,True,0
+100059,aaa,aaa,1234,0.00,True,0,,,
